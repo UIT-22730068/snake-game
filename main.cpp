@@ -1,12 +1,12 @@
 #include<bits/stdc++.h>
-#include<conio.h> // key press kbhit
+#include<conio.h>
 #include<windows.h>
 
 using namespace std;
 
 #define MAX_LENGTH 1000
 
-//Directions
+
 const char DIR_UP = 'U';
 const char DIR_DOWN = 'D';
 const char DIR_LEFT = 'L';
@@ -101,7 +101,7 @@ public:
 
         }
 
-        //snake bites itself
+        //rắn tự cắn
         for(int i=1;i<length;i++)
         {
             if(body[0].xCoord == body[i].xCoord && body[0].yCoord == body[i].yCoord)
@@ -110,7 +110,7 @@ public:
             }
         }
 
-        //snake eats food
+        //rắn ăn mồi
         if(food.xCoord == body[0].xCoord && food.yCoord == body[0].yCoord)
         {
             body[length] = Point(body[length-1].xCoord, body[length-1].yCoord);
@@ -127,7 +127,7 @@ class Board{
     Snake *snake;
     const char SNAKE_BODY = 'O';
     Point food;
-    const char FOOD = 'o';
+    const char FOOD = 'x';
     int score;
 public:
     Board(){
@@ -152,7 +152,7 @@ public:
 
     void displayCurrentScore(){
         gotoxy(consoleWidth/2,0);
-        cout<<"Current Score : "<< score;
+        cout<<"Diem so : "<< score;
     }
 
     void gotoxy(int x, int y)
@@ -228,7 +228,8 @@ int main(){
         Sleep(100);
     }
 
-    cout<<"Game over"<<endl;
-    cout<<"Final score is :"<<board->getScore();
+    cout<<"Ket thuc"<<endl;
+    cout<<"Diem so: "<<board->getScore();
     return 0;
 }
+
