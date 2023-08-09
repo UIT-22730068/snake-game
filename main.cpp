@@ -176,7 +176,7 @@ public:
 
         displayCurrentScore();
     }
-
+// cập nhật
     bool update(){
        bool isAlive = snake->move(food);
        if(isAlive == false)
