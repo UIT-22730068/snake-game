@@ -125,9 +125,9 @@ public:
 
 class Board{
     Snake *snake;
-    const char SNAKE_BODY = 'O';
+    const char SNAKE_BODY = 'x';
     Point food;
-    const char FOOD = 'x';
+    const char FOOD = 'o';
     int score;
 public:
     Board(){
