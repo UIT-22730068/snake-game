@@ -22,7 +22,7 @@ void initScreen()
     consoleHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
     consoleWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 }
-
+// điểm 
 struct Point{
     int xCoord;
     int yCoord;
@@ -35,7 +35,7 @@ struct Point{
     }
 };
 
-
+// tạo rắn
 class Snake{
     int length;
     char direction;
@@ -71,7 +71,7 @@ public:
         }
     }
 
-
+// di chuyển
     bool move(Point food){
 
         for(int i= length-1;i>0;i--)  // lenght = 4
@@ -125,9 +125,9 @@ public:
 
 class Board{
     Snake *snake;
-    const char SNAKE_BODY = 'O';
+    const char SNAKE_BODY = 'x';
     Point food;
-    const char FOOD = 'x';
+    const char FOOD = 'o';
     int score;
 public:
     Board(){
@@ -176,7 +176,7 @@ public:
 
         displayCurrentScore();
     }
-
+// cập nhật
     bool update(){
        bool isAlive = snake->move(food);
        if(isAlive == false)
@@ -225,7 +225,7 @@ int main(){
     {
         board->getInput();
         board->draw();
-        Sleep(500);  
+        Sleep(500);
     }
 
     cout<<"Ket thuc"<<endl;
