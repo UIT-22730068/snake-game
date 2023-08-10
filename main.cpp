@@ -225,7 +225,7 @@ int main(){
     {
         board->getInput();
         board->draw();
-        Sleep(100);
+        Sleep(500);
     }
 
     cout<<"Ket thuc"<<endl;
