@@ -71,7 +71,7 @@ public:
         }
     }
 
-
+// di chuyển
     bool move(Point food){
 
         for(int i= length-1;i>0;i--)  // lenght = 4
