@@ -22,7 +22,7 @@ void initScreen()
     consoleHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
     consoleWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 }
-
+// điểm 
 struct Point{
     int xCoord;
     int yCoord;
@@ -35,7 +35,7 @@ struct Point{
     }
 };
 
-
+// tạo rắn
 class Snake{
     int length;
     char direction;
@@ -176,7 +176,7 @@ public:
 
         displayCurrentScore();
     }
-
+// cập nhật
     bool update(){
        bool isAlive = snake->move(food);
        if(isAlive == false)
