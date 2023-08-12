@@ -1,235 +1,321 @@
-#include<bits/stdc++.h>
-#include<conio.h>
-#include<windows.h>
-
+#include <iostream>
+#include <time.h>
+#include <cstdlib>
+#include <windows.h>
+#include <process.h>
+#include <conio.h>
 using namespace std;
 
-#define MAX_LENGTH 1000
+#define MAX 100
+#define WIDTH 77
+#define HEIGHT 22
+#define INIT_SNAKE_LENGTH 4
+#define FOOD 1
 
+#define WALL -2
+#define SNAKE -1
+#define NOTHING 0
 
-const char DIR_UP = 'U';
-const char DIR_DOWN = 'D';
-const char DIR_LEFT = 'L';
-const char DIR_RIGHT = 'R';
+#define RIGHT 0
+#define UP 1
+#define LEFT 2
+#define DOWN 3
+#define EXIT -1
+static int dx[5] = { 1, 0, -1, 0 };
+static int dy[5] = { 0, -1, 0, 1 };
+//mảng hướng, để sử dụng với các hằng số Phải, Trái, Lên, Xuống
+//(1, 0) là phải
+//(0, -1) là lên (vì số hàng tăng dần từ trên xuống dưới)
+//(-1, 0) là trái
+//(0, 1) là xuống
 
-int consoleWidth, consoleHeight;
+int input = RIGHT;
+int item = NOTHING;
 
-void initScreen()
+void gotoxy(int column, int row)
 {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(hConsole, &csbi);
-    consoleHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-    consoleWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	HANDLE hStdOut;
+	COORD coord;
+
+	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hStdOut == INVALID_HANDLE_VALUE) return;
+
+	coord.X = column;
+	coord.Y = row;
+	SetConsoleCursorPosition(hStdOut, coord);
 }
-// điểm 
-struct Point{
-    int xCoord;
-    int yCoord;
-    Point(){
-    }
-    Point(int x, int y)
-    {
-        xCoord = x;
-        yCoord = y;
-    }
+
+void clearScreen()
+{
+	HANDLE                     hStdOut;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD                      count;
+	DWORD                      cellCount;
+	COORD                      homeCoords = { 0, 0 };
+
+	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hStdOut == INVALID_HANDLE_VALUE) return;
+
+
+	if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
+	cellCount = csbi.dwSize.X *csbi.dwSize.Y;
+
+
+	if (!FillConsoleOutputCharacter(
+		hStdOut,
+		(TCHAR) ' ',
+		cellCount,
+		homeCoords,
+		&count
+		)) return;
+
+
+	if (!FillConsoleOutputAttribute(
+		hStdOut,
+		csbi.wAttributes,
+		cellCount,
+		homeCoords,
+		&count
+		)) return;
+
+
+	SetConsoleCursorPosition(hStdOut, homeCoords);
+}
+
+
+int oppositeDirection(int input1, int input2)
+{
+	if (input1 == LEFT && input2 == RIGHT)
+		return 1;
+	if (input1 == RIGHT && input2 == LEFT)
+		return 1;
+	if (input1 == UP && input2 == DOWN)
+		return 1;
+	if (input1 == DOWN && input2 == UP)
+		return 1;
+
+	return 0;
+}
+
+struct Coordinate
+{
+	int x, y;
 };
 
-// tạo rắn
-class Snake{
-    int length;
-    char direction;
+class snake
+{
+private:
+	int length;
+	Coordinate body[WIDTH*HEIGHT];
+	int direction;
+	int ground[MAX][MAX];
+	int foodCounter;
 public:
-    Point body[MAX_LENGTH];
-    Snake(int x, int y)
-    {
-       length = 1;
-       body[0] = Point(x,y);
-       direction = DIR_RIGHT;
-    }
-
-    int getLength(){
-        return length;
-    }
-
-    void changeDirection(char newDirection){
-        if(newDirection == DIR_UP && direction != DIR_DOWN)
-        {
-            direction = newDirection;
-        }
-        else if(newDirection == DIR_DOWN && direction != DIR_UP)
-        {
-            direction = newDirection;
-        }
-        else if(newDirection == DIR_LEFT && direction != DIR_RIGHT)
-        {
-            direction = newDirection;
-        }
-        else if(newDirection == DIR_RIGHT && direction != DIR_LEFT)
-        {
-            direction = newDirection;
-        }
-    }
-
-// di chuyển
-    bool move(Point food){
-
-        for(int i= length-1;i>0;i--)  // lenght = 4
-        {
-            body[i] = body[i-1];
-        }
-
-        switch(direction)
-        {
-            int val;
-            case DIR_UP:
-                val = body[0].yCoord;
-                body[0].yCoord = val-1;
-                break;
-            case DIR_DOWN:
-                val = body[0].yCoord;
-                body[0].yCoord = val+1;
-                break;
-            case DIR_RIGHT:
-                val = body[0].xCoord;
-                body[0].xCoord = val+1;
-                break;
-            case DIR_LEFT:
-                val = body[0].xCoord;
-                body[0].xCoord = val-1;
-                break;
-
-        }
-
-        //rắn tự cắn
-        for(int i=1;i<length;i++)
-        {
-            if(body[0].xCoord == body[i].xCoord && body[0].yCoord == body[i].yCoord)
-            {
-                return false;
-            }
-        }
-
-        //rắn ăn mồi
-        if(food.xCoord == body[0].xCoord && food.yCoord == body[0].yCoord)
-        {
-            body[length] = Point(body[length-1].xCoord, body[length-1].yCoord);
-            length++;
-        }
-
-        return true;
-
-    }
+	void initGround();
+	void initSnake();
+	void updateSnake(int delay);
+	void updateFood();
+	void firstDraw();
+	int getFoodCounter();
 };
 
+void snake::initGround()
+{
+	int i, j;
+	for (i = 0; i < MAX; i++)
+		for (j = 0; j < MAX; j++)
+			ground[i][j] = 0;
 
-class Board{
-    Snake *snake;
-    const char SNAKE_BODY = 'x';
-    Point food;
-    const char FOOD = 'o';
-    int score;
-public:
-    Board(){
-        spawnFood();
-        snake = new Snake(10,10);
-        score = 0;
-    }
+	for (i = 0; i <= WIDTH + 1; i++)
+	{
 
-    ~Board(){
-        delete snake;
-    }
+		ground[0][i] = WALL;
+		ground[HEIGHT + 1][i] = WALL;
+	}
+	for (i = 0; i <= HEIGHT + 1; i++)
+	{
 
-    int getScore(){
-        return score;
-    }
+		ground[i][0] = WALL;
+		ground[i][WIDTH + 1] = WALL;
+	}
+}
 
-    void spawnFood(){
-        int x = rand() % consoleWidth;
-        int y = rand() % consoleHeight;
-        food = Point(x, y);
-    }
+void snake::initSnake()
+{
+	length = INIT_SNAKE_LENGTH;
+	body[0].x = WIDTH / 2;
+	body[0].y = HEIGHT / 2;
+	direction = input;
+	foodCounter = 0;
 
-    void displayCurrentScore(){
-        gotoxy(consoleWidth/2,0);
-        cout<<"Diem so : "<< score;
-    }
+	int i;
+	for (i = 1; i < length; i++)
+	{
+		body[i].x = body[i - 1].x - dx[direction];
+		body[i].y = body[i - 1].y - dy[direction];
+	}
 
-    void gotoxy(int x, int y)
-    {
-        COORD coord;
-        coord.X = x;
-        coord.Y = y;
-        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),coord);
-    }
+	for (i = 0; i < length; i++)
+		ground[body[i].y][body[i].x] = SNAKE;
+}
 
-    void draw(){
-        system("cls");
-        for(int i=0;i<snake->getLength();i++)
-        {
-            gotoxy(snake->body[i].xCoord, snake->body[i].yCoord);
-            cout<<SNAKE_BODY;
-        }
+void snake::updateSnake(int delay)
+{
+	int i;
+	Coordinate prev[WIDTH*HEIGHT];
+	for (i = 0; i < length; i++)
+	{
+		prev[i].x = body[i].x;
+		prev[i].y = body[i].y;
+	}
 
-        gotoxy(food.xCoord, food.yCoord);
-        cout<<FOOD;
+	if (input != EXIT && !oppositeDirection(direction, input))
+		direction = input;
 
-        displayCurrentScore();
-    }
-// cập nhật
-    bool update(){
-       bool isAlive = snake->move(food);
-       if(isAlive == false)
-       {
-           return false;
-       }
+	body[0].x = prev[0].x + dx[direction];
+	body[0].y = prev[0].y + dy[direction];
 
-        if(food.xCoord == snake->body[0].xCoord && food.yCoord == snake->body[0].yCoord)
-        {
-            score++;
-            spawnFood();
-        }
-       return true;
-    }
+	if (ground[body[0].y][body[0].x] < NOTHING)
+	{
+		item = -1;
+		return;
+	}
 
-    void getInput(){
-        if(kbhit())
-        {
-            int key = getch();
-            if(key == 'w' || key == 'W')
-            {
-                snake->changeDirection(DIR_UP);
-            }
-            else if(key == 'a' || key == 'A')
-            {
-                snake->changeDirection(DIR_LEFT);
-            }
-            else if(key == 's' || key == 'S')
-            {
-                snake->changeDirection(DIR_DOWN);
-            }
-            else if(key == 'd' || key == 'D')
-            {
-                snake->changeDirection(DIR_RIGHT);
-            }
-        }
-    }
+	if (ground[body[0].y][body[0].x] == FOOD)
+	{
+		length++;
+		item = FOOD;
+	}
+	else
+	{
+		ground[body[length - 1].y][body[length - 1].x] = NOTHING;
+		item = NOTHING;
+		gotoxy(body[length - 1].x, body[length - 1].y);
+		cout << " ";
+	}
 
-};
+	for (i = 1; i < length; i++)
+	{
+		body[i].x = prev[i - 1].x;
+		body[i].y = prev[i - 1].y;
+	}
 
-int main(){
-    srand(time(0));
-    initScreen();
-    Board *board = new Board();
-    while(board->update())
-    {
-        board->getInput();
-        board->draw();
-        Sleep(500);
-    }
+	gotoxy(body[1].x, body[1].y);
+	cout << "+";
+	gotoxy(body[0].x, body[0].y);
+	cout << "O";
 
-    cout<<"Ket thuc"<<endl;
-    cout<<"Diem so: "<<board->getScore();
-    return 0;
+
+	for (i = 0; i < length; i++)
+		ground[body[i].y][body[i].x] = SNAKE;
+
+	Sleep(delay);
+
+	return;
+}
+
+void snake::updateFood()
+{
+	int x, y;
+	do
+	{
+		x = rand() % WIDTH + 1;
+		y = rand() % HEIGHT + 1;
+	} while (ground[y][x] != NOTHING);
+
+	ground[y][x] = FOOD;
+	foodCounter++;
+	gotoxy(x, y);
+	cout << "o";
+}
+
+void snake::firstDraw()
+{
+	clearScreen();
+	int i, j;
+	for (i = 0; i <= HEIGHT + 1; i++)
+	{
+		for (j = 0; j <= WIDTH + 1; j++)
+		{
+			switch (ground[i][j])
+			{
+			case NOTHING:
+				cout << " "; break;
+			case WALL:
+				if ((i == 0 && j == 0)
+					|| (i == 0 && j == WIDTH + 1)
+					|| (i == HEIGHT + 1 && j == 0)
+					|| (i == HEIGHT + 1 && j == WIDTH + 1))
+					cout << "+";
+				else
+					if (j == 0 || j == WIDTH + 1)
+						cout << "|";
+					else
+						cout << "-";
+				break;
+			case SNAKE:
+				if (i == body[0].y && j == body[0].x)
+					cout << ".";
+				else
+					cout << "+";
+				break;
+			default:
+				cout << "o";
+			}
+		}
+		cout << endl;
+	}
+}
+
+int snake::getFoodCounter()
+{
+	return foodCounter;
+}
+
+void userInput(void* id)
+{
+	do
+	{
+		int c = _getch();
+		switch (c)
+		{
+		case 'W': case 'w': input = UP   ; break;
+		case 'S': case 's': input = DOWN ; break;
+		case 'D': case 'd': input = RIGHT; break;
+		case 'A': case 'a': input = LEFT ; break;
+		case 27:	    input = EXIT ; break;
+		}
+	} while (input != EXIT && item >= 0);
+
+	_endthread();
+	return;
+}
+
+int main()
+{
+	int delay = 50;
+	srand(time(NULL));
+	snake nagini;
+	nagini.initGround();
+	nagini.initSnake();
+	nagini.updateFood();
+	nagini.firstDraw();
+	_beginthread(userInput, 0, (void*)0);
+
+	do
+	{
+		nagini.updateSnake(delay);
+		if (item == FOOD)
+			nagini.updateFood();
+	} while (item >= 0 && input != EXIT);
+
+	gotoxy(WIDTH / 2 - 5, HEIGHT / 2 - 2);
+	cout << "TRO CHOI KET THUC";
+	gotoxy(WIDTH / 2 - 8, HEIGHT / 2 + 2);
+	cout << "Diem cua ban la " << nagini.getFoodCounter() - 1 << endl;
+	gotoxy(WIDTH / 2, HEIGHT / 2);
+
+	_getch();
+	return 0;
 }
 
