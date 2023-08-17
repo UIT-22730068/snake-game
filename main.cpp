@@ -21,7 +21,8 @@ using namespace std;
 #define LEFT 2
 #define DOWN 3
 #define EXIT -1
-static int dx[5] = { 1, 0, -1, 0 };
+// Khởi tạo con rắn
+static int dx[5] = { 1, 0, -1, 0 }; 
 static int dy[5] = { 0, -1, 0, 1 };
 //mảng hướng, để sử dụng với các hằng số Phải, Trái, Lên, Xuống
 //(1, 0) là phải
@@ -213,7 +214,7 @@ void snake::updateSnake(int delay)
 
 	return;
 }
-
+// Tạo thức ăn cho rắn
 void snake::updateFood()
 {
 	int x, y;
@@ -228,7 +229,7 @@ void snake::updateFood()
 	gotoxy(x, y);
 	cout << "o";
 }
-
+// vẽ con rắn 
 void snake::firstDraw()
 {
 	clearScreen();
