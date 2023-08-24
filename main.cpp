@@ -294,7 +294,7 @@ void userInput(void* id)
 
 int main()
 {
-	int delay = 50;
+	int delay = 100;
 	srand(time(NULL));
 	snake nagini;
 	nagini.initGround();
