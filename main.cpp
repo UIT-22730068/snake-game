@@ -83,7 +83,7 @@ void clearScreen()
 	SetConsoleCursorPosition(hStdOut, homeCoords);
 }
 
-
+//kiểm tra xem 2 hướng có ngược nhau không
 int oppositeDirection(int input1, int input2)
 {
 	if (input1 == LEFT && input2 == RIGHT)
